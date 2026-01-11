@@ -235,17 +235,25 @@ function sendJointUpdate(joint, value, action) {
 }
 
 function handleIncomingJointUpdate(data) {
-    if (connectionMode !== 'receptor') return;
+    console.log('Received:', data);
 
     try {
-        const { joint, value, action } = JSON.parse(data);
+        const message = JSON.parse(data);
+        console.log('Parsed:', message);
+
+        if (message.type !== 'joint_update') return;
+        if (connectionMode !== 'receptor') return;
+
+        const { joint, value, action } = message;
         if (!jointValues.hasOwnProperty(joint)) return;
 
         jointValues[joint] = value;
         updateJointDisplay(joint);
         flashJointCard(joint, action);
         addLogEntry(`<span class="joint-label">${JOINT_LABELS[joint]}</span> ${action} → <span class="value">${value}</span>`, action);
-    } catch { }
+    } catch (e) {
+        console.error('Parse error:', e);
+    }
 }
 
 function flashJointCard(joint, action) {
